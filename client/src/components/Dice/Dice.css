@@ -1,0 +1,48 @@
+.dice {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.dice__hint {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.die {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.die--used {
+  opacity: 0.34;
+  transform: scale(0.95);
+}
+
+.die__pip {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 760px) {
+  .die {
+    width: 42px;
+    height: 42px;
+  }
+
+  .die__pip {
+    width: 7px;
+    height: 7px;
+  }
+}

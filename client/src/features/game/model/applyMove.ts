@@ -1,0 +1,1 @@
+export { applyMove } from 'shared';

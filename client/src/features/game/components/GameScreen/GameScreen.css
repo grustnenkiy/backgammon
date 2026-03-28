@@ -1,0 +1,114 @@
+.game-screen {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+
+.game-screen__title {
+  margin: 0;
+  padding: 0.48rem 0.88rem;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  font-size: clamp(0.72rem, 1.8vw, 0.96rem);
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.game-screen__panel {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  padding: 0.58rem 0.78rem;
+  border: 2px solid var(--line);
+  background: var(--surface);
+}
+
+.game-screen__roll,
+.game-screen__toggle {
+  min-height: 44px;
+  padding: 0.62rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--line);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: filter 120ms ease, background 120ms ease;
+}
+
+.game-screen__roll {
+  background: var(--accent);
+  color: #fff;
+}
+
+.game-screen__roll:hover {
+  filter: brightness(0.9);
+}
+
+.game-screen__roll:disabled {
+  background: var(--surface);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.game-screen__toggle {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.game-screen__toggle--active {
+  background: var(--accent-soft);
+}
+
+.game-screen__board-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  padding: 0.2rem 0 0.7rem;
+}
+
+@media (max-width: 760px) {
+  .game-screen__panel {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+.game-screen__info {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.game-screen__link-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem;
+  border: 2px solid var(--line);
+  background: var(--surface);
+}
+
+.game-screen__link-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border: 2px solid var(--line);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}

@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap');
+
+:root {
+  --bg: #ddd9d3;
+  --surface: #f3f2f0;
+  --ink: #1a1a1b;
+  --muted: #8d8b86;
+  --line: #1f2022;
+  --soft-line: #c9c5be;
+
+  --accent: #ef3216;
+  --accent-soft: #ffd9d2;
+
+  --tri-dark: #4f5053;
+  --tri-light: #c3bfb8;
+
+  --checker-white: #f7f7f6;
+  --checker-black: #18191b;
+
+  color: var(--ink);
+  font-family: 'Archivo', 'Segoe UI', sans-serif;
+  line-height: 1.45;
+  font-weight: 600;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: clamp(0.9rem, 2.7vw, 2.1rem);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+button {
+  font: inherit;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}

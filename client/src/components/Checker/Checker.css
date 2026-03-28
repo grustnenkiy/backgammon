@@ -1,0 +1,17 @@
+.checker {
+  width: var(--checker-size);
+  height: var(--checker-size);
+  border-radius: 999px;
+  flex-shrink: 0;
+  transition: outline-color 120ms ease;
+}
+
+.checker--player-white {
+  background: var(--checker-white);
+  border: 2px solid var(--line);
+}
+
+.checker--player-black {
+  background: var(--checker-black);
+  border: 2px solid var(--surface);
+}
