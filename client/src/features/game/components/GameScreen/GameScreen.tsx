@@ -18,6 +18,7 @@ export function GameScreen() {
     selectedSource,
     validDestinations,
     hasRolled,
+    noMovesNotice,
     handleRollDice,
     handlePointClick,
     handleBarClick,
@@ -35,6 +36,8 @@ export function GameScreen() {
   return (
     <div className="game-screen">
       <h2 className="game-screen__title">{title}</h2>
+
+      {noMovesNotice && <p className="game-screen__notice">No valid moves — turn passes</p>}
 
       <div className="game-screen__panel">
         <button

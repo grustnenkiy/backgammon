@@ -39,7 +39,9 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  transition: filter 120ms ease, background 120ms ease;
+  transition:
+    filter 120ms ease,
+    background 120ms ease;
 }
 
 .game-screen__roll {
@@ -55,6 +57,19 @@
   background: var(--surface);
   color: var(--muted);
   cursor: not-allowed;
+}
+
+.game-screen__notice {
+  margin: 0;
+  padding: 0.45rem 1rem;
+  border: 2px solid var(--line);
+  background: #fffbe6;
+  color: #7a5a00;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .game-screen__toggle {

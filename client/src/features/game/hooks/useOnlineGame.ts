@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Move, PlayerColor, RoomState } from 'shared';
-import { getValidMoves } from 'shared';
+import { getValidMoves, hasAnyValidMoves } from 'shared';
 import { socket } from '../api/socket';
 
 type OnlineStatus = 'connecting' | 'waiting' | 'playing' | 'finished' | 'disconnected' | 'error';
@@ -13,12 +13,13 @@ export function useOnlineGame(roomId: string) {
 
   const [selectedSource, setSelectedSource] = useState<number | 'bar' | null>(null);
   const [validMoves, setValidMoves] = useState<Move[]>([]);
+  const [noMovesNotice, setNoMovesNotice] = useState(false);
 
   const game = room?.game ?? null;
 
   const isMyTurn = game !== null && myColor !== null && game.currentTurn === myColor;
-  const hasRolled = game !== null && game.dice.length > 0 &&
-    game.usedDice.length < game.dice.length;
+  const hasRolled =
+    game !== null && game.dice.length > 0 && game.usedDice.length < game.dice.length;
 
   const validDestinations = useMemo(() => validMoves.map((m) => m.to), [validMoves]);
 
@@ -60,6 +61,9 @@ export function useOnlineGame(roomId: string) {
       } else {
         setStatus('waiting');
       }
+
+      // Show notice when dice are visible but no moves are possible
+      setNoMovesNotice(r.game.dice.length > 0 && !hasAnyValidMoves(r.game));
       clearSelection();
     });
 
@@ -151,6 +155,7 @@ export function useOnlineGame(roomId: string) {
     selectedSource,
     validDestinations,
     hasRolled: hasRolled && isMyTurn,
+    noMovesNotice,
     handleRollDice,
     handlePointClick,
     handleBarClick,

@@ -34,10 +34,12 @@ export function joinRoom(roomId: string, socketId: string): RoomState | null {
     return null;
   }
 
-  if (!room.players.black) {
-    room.players.black = socketId;
-    room.game.status = 'playing';
+  if (room.players.black) {
+    return null; // room is already full
   }
+
+  room.players.black = socketId;
+  room.game.status = 'playing';
 
   return room;
 }

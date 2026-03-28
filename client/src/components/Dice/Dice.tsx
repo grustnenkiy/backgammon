@@ -55,16 +55,9 @@ export function Dice({ values, usedDice = [] }: DiceProps) {
     <div className="dice">
       {dice.length ? (
         dice.map((die, index) => (
-          <div
-            key={`${die.value}-${index}`}
-            className={clsx('die', die.isUsed && 'die--used')}
-          >
+          <div key={`${die.value}-${index}`} className={clsx('die', die.isUsed && 'die--used')}>
             {(dotPositions[die.value] ?? []).map(([x, y], dotIdx) => (
-              <div
-                key={dotIdx}
-                className="die__pip"
-                style={{ left: `${x}%`, top: `${y}%` }}
-              />
+              <div key={dotIdx} className="die__pip" style={{ left: `${x}%`, top: `${y}%` }} />
             ))}
           </div>
         ))

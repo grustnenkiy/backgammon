@@ -78,7 +78,7 @@ export function Board({
             {TOP_LEFT.map((idx, col) => renderPoint(idx, 'top', col))}
           </div>
           <button
-            className={`board__bar${selectedPoint === 'bar' ? ' board__bar--selected' : ''}`}
+            className={`board__bar${selectedPoint === 'bar' && game.currentTurn === 'black' ? ' board__bar--selected' : ''}`}
             type="button"
             onClick={onBarClick}
           >
@@ -100,7 +100,7 @@ export function Board({
             {BOTTOM_LEFT.map((idx, col) => renderPoint(idx, 'bottom', col))}
           </div>
           <button
-            className={`board__bar${selectedPoint === 'bar' ? ' board__bar--selected' : ''}`}
+            className={`board__bar${selectedPoint === 'bar' && game.currentTurn === 'white' ? ' board__bar--selected' : ''}`}
             type="button"
             onClick={onBarClick}
           >

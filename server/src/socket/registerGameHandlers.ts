@@ -1,7 +1,13 @@
 import type { Server, Socket } from 'socket.io';
 import type { GameState, Move, PlayerColor, RoomState } from 'shared';
 import { applyMove, getValidMoves, hasAnyValidMoves } from 'shared';
-import { createRoom, getRoom, joinRoom, removePlayer, findRoomByPlayer } from '../rooms/roomStore.js';
+import {
+  createRoom,
+  getRoom,
+  joinRoom,
+  removePlayer,
+  findRoomByPlayer,
+} from '../rooms/roomStore.js';
 
 function rollDice(): number[] {
   const a = Math.floor(Math.random() * 6) + 1;
@@ -80,7 +86,16 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     room.game = { ...room.game, dice, usedDice: [] };
 
     if (!hasAnyValidMoves(room.game)) {
-      room.game = switchTurn(room.game);
+      // Emit with dice shown first so both players can see the blocking roll
+      io.to(roomId).emit('game_state', room);
+      setTimeout(() => {
+        const r = getRoom(roomId);
+        if (r) {
+          r.game = switchTurn(r.game);
+          io.to(roomId).emit('game_state', r);
+        }
+      }, 2500);
+      return;
     }
 
     io.to(roomId).emit('game_state', room);
@@ -96,6 +111,17 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     const playerColor = getPlayerColor(room, socket.id);
     if (!playerColor || playerColor !== room.game.currentTurn) {
       socket.emit('game_error', { message: 'Not your turn' });
+      return;
+    }
+
+    if (
+      !move ||
+      typeof move !== 'object' ||
+      (move.from !== 'bar' && typeof move.from !== 'number') ||
+      (move.to !== 'off' && typeof move.to !== 'number') ||
+      typeof move.die !== 'number'
+    ) {
+      socket.emit('game_error', { message: 'Invalid move format' });
       return;
     }
 

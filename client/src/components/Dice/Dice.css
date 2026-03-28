@@ -18,7 +18,9 @@
   height: 46px;
   border: 2px solid var(--line);
   background: var(--surface);
-  transition: opacity 120ms ease, transform 120ms ease;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
 }
 
 .die--used {

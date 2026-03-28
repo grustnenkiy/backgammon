@@ -29,6 +29,7 @@ export function useLocalGame() {
   const [selectedSource, setSelectedSource] = useState<number | 'bar' | null>(null);
   const [validMoves, setValidMoves] = useState<Move[]>([]);
   const [hasRolled, setHasRolled] = useState(false);
+  const [noMovesNotice, setNoMovesNotice] = useState(false);
 
   const validDestinations = useMemo(() => validMoves.map((m) => m.to), [validMoves]);
 
@@ -69,8 +70,14 @@ export function useLocalGame() {
     const newGame: GameState = { ...game, dice: newDice, usedDice: [] };
 
     if (!hasAnyValidMoves(newGame)) {
-      // No valid moves at all — skip turn
-      setGame(switchTurn(newGame));
+      // Show the blocking dice first, then auto-switch after a short delay
+      setGame(newGame);
+      setNoMovesNotice(true);
+      setTimeout(() => {
+        setGame((g) => switchTurn(g));
+        setNoMovesNotice(false);
+        setHasRolled(false);
+      }, 2500);
       return;
     }
 
@@ -149,6 +156,7 @@ export function useLocalGame() {
     selectedSource,
     validDestinations,
     hasRolled,
+    noMovesNotice,
     handleRollDice,
     handlePointClick,
     handleBarClick,
