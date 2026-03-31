@@ -154,7 +154,8 @@ function filterByTurnDiceRules(game: GameState, moves: Move[]): Move[] {
   const remainingDice = getRemainingDice(game);
   if (remainingDice.length !== 2) return moves;
 
-  const [d1, d2] = remainingDice;
+  const d1 = remainingDice[0]!;
+  const d2 = remainingDice[1]!;
   if (d1 === d2) return moves; // doubles are handled naturally
 
   const allFirstMoves = getAllRawValidMoves(game);
