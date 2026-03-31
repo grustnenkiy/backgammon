@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { io as ioClient, type Socket as ClientSocket } from 'socket.io-client';
-import { registerGameHandlers } from '../socket/registerGameHandlers.js';
+import { registerGameHandlers, DISCONNECT_GRACE_MS } from '../socket/registerGameHandlers.js';
 import { clearRooms } from '../rooms/roomStore.js';
 import type { RoomState, Move } from 'shared';
 
@@ -404,26 +404,30 @@ describe('move_checker', () => {
 });
 
 describe('disconnect', () => {
-  it('notifies the room when a player disconnects', async () => {
-    const host = await connectClient();
-    const guest = await connectClient();
-    try {
-      const createPromise = waitFor<RoomState>(host, 'game_created');
-      host.emit('create_game');
-      const created = await createPromise;
+  it(
+    'notifies the room when a player disconnects',
+    async () => {
+      const host = await connectClient();
+      const guest = await connectClient();
+      try {
+        const createPromise = waitFor<RoomState>(host, 'game_created');
+        host.emit('create_game');
+        const created = await createPromise;
 
-      const joinPromise = waitFor<RoomState>(host, 'game_state');
-      guest.emit('join_game', created.roomId);
-      await joinPromise;
+        const joinPromise = waitFor<RoomState>(host, 'game_state');
+        guest.emit('join_game', created.roomId);
+        await joinPromise;
 
-      const disconnectPromise = waitFor<void>(host, 'player_disconnected');
-      guest.disconnect();
-      await disconnectPromise;
+        const disconnectPromise = waitFor<void>(host, 'player_disconnected');
+        guest.disconnect();
+        await disconnectPromise;
 
-      // If we reach here, host received the event
-      expect(true).toBe(true);
-    } finally {
-      host.disconnect();
-    }
-  });
+        // If we reach here, host received the event
+        expect(true).toBe(true);
+      } finally {
+        host.disconnect();
+      }
+    },
+    DISCONNECT_GRACE_MS + 3000,
+  );
 });

@@ -37,19 +37,17 @@ export function useOnlineGame(roomId: string) {
   }, []);
 
   useEffect(() => {
-    socket.connect();
-
-    socket.on('connect', () => {
+    function onConnect() {
       socket.emit('join_game', roomId);
-    });
+    }
 
-    socket.on('game_created', (r: RoomState) => {
+    function onGameCreated(r: RoomState) {
       setRoom(r);
       setMyColor(resolveMyColor(r));
       setStatus('waiting');
-    });
+    }
 
-    socket.on('game_state', (r: RoomState) => {
+    function onGameState(r: RoomState) {
       setRoom(r);
       const color = resolveMyColor(r);
       if (color) setMyColor(color);
@@ -65,23 +63,37 @@ export function useOnlineGame(roomId: string) {
       // Show notice when dice are visible but no moves are possible
       setNoMovesNotice(r.game.dice.length > 0 && !hasAnyValidMoves(r.game));
       clearSelection();
-    });
+    }
 
-    socket.on('player_disconnected', () => {
+    function onPlayerDisconnected() {
       setStatus('disconnected');
-    });
+    }
 
-    socket.on('game_error', (data: { message: string }) => {
+    function onGameError(data: { message: string }) {
       setError(data.message);
-    });
+      setStatus('error');
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('game_created', onGameCreated);
+    socket.on('game_state', onGameState);
+    socket.on('player_disconnected', onPlayerDisconnected);
+    socket.on('game_error', onGameError);
+
+    socket.connect();
+
+    // If socket is already connected (e.g. room creator navigating from home),
+    // the 'connect' event won't fire again — emit join_game immediately.
+    if (socket.connected) {
+      onConnect();
+    }
 
     return () => {
-      socket.off('connect');
-      socket.off('game_created');
-      socket.off('game_state');
-      socket.off('player_disconnected');
-      socket.off('game_error');
-      socket.disconnect();
+      socket.off('connect', onConnect);
+      socket.off('game_created', onGameCreated);
+      socket.off('game_state', onGameState);
+      socket.off('player_disconnected', onPlayerDisconnected);
+      socket.off('game_error', onGameError);
     };
   }, [roomId, resolveMyColor, clearSelection]);
 

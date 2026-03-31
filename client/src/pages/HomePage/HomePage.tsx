@@ -18,9 +18,13 @@ export function HomePage() {
       navigate(`/game/${room.roomId}`);
     });
 
-    socket.once('connect', () => {
+    if (socket.connected) {
       socket.emit('create_game');
-    });
+    } else {
+      socket.once('connect', () => {
+        socket.emit('create_game');
+      });
+    }
   }
 
   return (

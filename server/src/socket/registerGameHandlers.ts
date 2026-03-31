@@ -6,6 +6,8 @@ import {
   getRoom,
   joinRoom,
   removePlayer,
+  deleteEmptyRooms,
+  isRoomEmpty,
   findRoomByPlayer,
 } from '../rooms/roomStore.js';
 
@@ -34,6 +36,10 @@ function getPlayerColor(room: RoomState, socketId: string): PlayerColor | null {
   return null;
 }
 
+const disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+export const DISCONNECT_GRACE_MS = 5000;
+
 export function registerGameHandlers(io: Server, socket: Socket) {
   socket.on('create_game', () => {
     const room = createRoom(socket.id);
@@ -42,6 +48,14 @@ export function registerGameHandlers(io: Server, socket: Socket) {
   });
 
   socket.on('join_game', (roomId: string) => {
+    // Cancel any pending disconnect timer for this room
+    const timerKey = `${roomId}`;
+    const existing = disconnectTimers.get(timerKey);
+    if (existing) {
+      clearTimeout(existing);
+      disconnectTimers.delete(timerKey);
+    }
+
     const room = joinRoom(roomId, socket.id);
 
     if (!room) {
@@ -147,10 +161,24 @@ export function registerGameHandlers(io: Server, socket: Socket) {
 
   socket.on('disconnect', () => {
     const room = findRoomByPlayer(socket.id);
-    if (room) {
-      const roomId = room.roomId;
-      removePlayer(socket.id);
-      io.to(roomId).emit('player_disconnected');
-    }
+    if (!room) return;
+
+    const roomId = room.roomId;
+
+    // Remove the player from the slot immediately so a reconnecting
+    // socket (new ID after page reload) can reclaim the slot.
+    removePlayer(socket.id);
+
+    // Delay room cleanup and opponent notification to allow for page reloads.
+    const timer = setTimeout(() => {
+      disconnectTimers.delete(roomId);
+      if (isRoomEmpty(roomId)) {
+        deleteEmptyRooms();
+      } else {
+        // Slot was not reclaimed — notify the remaining player
+        io.to(roomId).emit('player_disconnected');
+      }
+    }, DISCONNECT_GRACE_MS);
+    disconnectTimers.set(roomId, timer);
   });
 }

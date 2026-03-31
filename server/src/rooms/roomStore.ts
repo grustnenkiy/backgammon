@@ -34,6 +34,17 @@ export function joinRoom(roomId: string, socketId: string): RoomState | null {
     return null;
   }
 
+  // Player is already in the room (e.g. creator navigating to game page)
+  if (room.players.white === socketId || room.players.black === socketId) {
+    return room;
+  }
+
+  // Fill a vacated white slot (reconnection after page reload)
+  if (!room.players.white) {
+    room.players.white = socketId;
+    return room;
+  }
+
   if (room.players.black) {
     return null; // room is already full
   }
@@ -52,10 +63,20 @@ export function removePlayer(socketId: string): void {
     if (room.players.black === socketId) {
       delete room.players.black;
     }
+  }
+}
+
+export function deleteEmptyRooms(): void {
+  for (const [roomId, room] of rooms.entries()) {
     if (!room.players.white && !room.players.black) {
       rooms.delete(roomId);
     }
   }
+}
+
+export function isRoomEmpty(roomId: string): boolean {
+  const room = rooms.get(roomId);
+  return !room || (!room.players.white && !room.players.black);
 }
 
 export function findRoomByPlayer(socketId: string): RoomState | undefined {

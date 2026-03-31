@@ -31,6 +31,20 @@ export function OnlineGameScreen({ roomId }: OnlineGameScreenProps) {
     handleBearOff,
   } = useOnlineGame(roomId);
 
+  const title = useMemo(() => {
+    if (!game || !myColor) return '';
+    if (game.status === 'finished') {
+      const winnerName = DISPLAY_NAME[game.winner!];
+      return game.winner === myColor ? `${winnerName} (You) wins!` : `${winnerName} wins`;
+    }
+    const turnName = DISPLAY_NAME[game.currentTurn];
+    if (isMyTurn) {
+      if (!hasRolled && game.dice.length === 0) return `${turnName} (You) — roll the dice`;
+      return `Your turn (${turnName})`;
+    }
+    return `${turnName}'s turn — waiting...`;
+  }, [game, myColor, isMyTurn, hasRolled]);
+
   if (status === 'connecting') {
     return (
       <div className="game-screen">
@@ -80,19 +94,6 @@ export function OnlineGameScreen({ roomId }: OnlineGameScreenProps) {
   }
 
   if (!game || !myColor) return null;
-
-  const title = useMemo(() => {
-    if (game.status === 'finished') {
-      const winnerName = DISPLAY_NAME[game.winner!];
-      return game.winner === myColor ? `${winnerName} (You) wins!` : `${winnerName} wins`;
-    }
-    const turnName = DISPLAY_NAME[game.currentTurn];
-    if (isMyTurn) {
-      if (!hasRolled && game.dice.length === 0) return `${turnName} (You) — roll the dice`;
-      return `Your turn (${turnName})`;
-    }
-    return `${turnName}'s turn — waiting...`;
-  }, [game.currentTurn, game.status, game.winner, game.dice.length, myColor, isMyTurn, hasRolled]);
 
   return (
     <div className="game-screen">

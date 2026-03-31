@@ -4,6 +4,7 @@ import {
   getRoom,
   joinRoom,
   removePlayer,
+  deleteEmptyRooms,
   findRoomByPlayer,
   clearRooms,
 } from '../rooms/roomStore.js';
@@ -80,7 +81,16 @@ describe('joinRoom', () => {
     joinRoom(room.roomId, 'guest-1');
     const result = joinRoom(room.roomId, 'guest-2');
 
-    expect(result!.players.black).toBe('guest-1');
+    expect(result).toBeNull();
+    expect(room.players.black).toBe('guest-1');
+  });
+
+  it('allows the host to rejoin their own room', () => {
+    const room = createRoom('host');
+    const result = joinRoom(room.roomId, 'host');
+
+    expect(result).toBe(room);
+    expect(result!.game.status).toBe('waiting');
   });
 
   it('returns the same room reference', () => {
@@ -112,21 +122,21 @@ describe('removePlayer', () => {
     expect(room.players.black).toBeUndefined();
   });
 
-  it('deletes room when both players are gone', () => {
+  it('does not delete room when both players are gone', () => {
     const room = createRoom('host');
     joinRoom(room.roomId, 'guest');
 
     removePlayer('host');
     removePlayer('guest');
 
-    expect(getRoom(room.roomId)).toBeUndefined();
+    expect(getRoom(room.roomId)).toBeDefined();
   });
 
-  it('deletes room when sole player leaves', () => {
+  it('does not delete room when sole player leaves', () => {
     const room = createRoom('host');
     removePlayer('host');
 
-    expect(getRoom(room.roomId)).toBeUndefined();
+    expect(getRoom(room.roomId)).toBeDefined();
   });
 
   it('is a no-op for unknown socket ID', () => {
@@ -135,6 +145,25 @@ describe('removePlayer', () => {
 
     expect(getRoom(room.roomId)).toBeDefined();
     expect(room.players.white).toBe('host');
+  });
+});
+
+describe('deleteEmptyRooms', () => {
+  it('deletes rooms with no players', () => {
+    const room = createRoom('host');
+    removePlayer('host');
+    deleteEmptyRooms();
+
+    expect(getRoom(room.roomId)).toBeUndefined();
+  });
+
+  it('keeps rooms that still have players', () => {
+    const room = createRoom('host');
+    joinRoom(room.roomId, 'guest');
+    removePlayer('guest');
+    deleteEmptyRooms();
+
+    expect(getRoom(room.roomId)).toBeDefined();
   });
 });
 
