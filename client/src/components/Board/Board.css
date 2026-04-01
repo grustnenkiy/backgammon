@@ -231,9 +231,6 @@
 
 .board__tray--active {
   cursor: pointer;
-  background: var(--accent-soft);
-  outline: 3px solid var(--accent);
-  outline-offset: -3px;
 }
 
 .tray__section {
@@ -247,6 +244,12 @@
 
 .tray__section:first-child {
   border-bottom: 1px solid var(--line);
+}
+
+.tray__section--active {
+  background: var(--accent-soft);
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
 }
 
 .tray__count {

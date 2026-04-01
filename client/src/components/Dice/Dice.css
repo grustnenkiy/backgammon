@@ -1,7 +1,9 @@
 .dice {
+  --die-size: 46px;
   display: flex;
   align-items: center;
   gap: 0.55rem;
+  min-height: var(--die-size);
 }
 
 .dice__hint {
@@ -38,6 +40,10 @@
 }
 
 @media (max-width: 760px) {
+  .dice {
+    --die-size: 42px;
+  }
+
   .die {
     width: 42px;
     height: 42px;

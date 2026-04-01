@@ -123,19 +123,23 @@ export function Board({
         type="button"
         onClick={onBearOff}
       >
-        <div className="tray__section">
-          {game.borneOff.black > 0 && (
-            <>
-              <Checker color="black" />
-              <span className="tray__count">{game.borneOff.black}</span>
-            </>
-          )}
-        </div>
-        <div className="tray__section">
+        <div
+          className={`tray__section${canBearOff && game.currentTurn === 'white' ? ' tray__section--active' : ''}`}
+        >
           {game.borneOff.white > 0 && (
             <>
               <Checker color="white" />
               <span className="tray__count">{game.borneOff.white}</span>
+            </>
+          )}
+        </div>
+        <div
+          className={`tray__section${canBearOff && game.currentTurn === 'black' ? ' tray__section--active' : ''}`}
+        >
+          {game.borneOff.black > 0 && (
+            <>
+              <Checker color="black" />
+              <span className="tray__count">{game.borneOff.black}</span>
             </>
           )}
         </div>
