@@ -61,8 +61,24 @@ export function useOnlineGame(roomId: string) {
       }
 
       // Show notice when dice are visible but no moves are possible
-      setNoMovesNotice(r.game.dice.length > 0 && !hasAnyValidMoves(r.game));
-      clearSelection();
+      setNoMovesNotice(
+        r.game.status !== 'finished' && r.game.dice.length > 0 && !hasAnyValidMoves(r.game),
+      );
+
+      // Auto-select bar when it's my turn and I have checkers on the bar
+      const hasRolledDice =
+        r.game.dice.length > 0 && r.game.usedDice.length < r.game.dice.length;
+      if (color && r.game.currentTurn === color && hasRolledDice && r.game.bar[color] > 0) {
+        const barMoves = getValidMoves(r.game, 'bar');
+        if (barMoves.length > 0) {
+          setSelectedSource('bar');
+          setValidMoves(barMoves);
+        } else {
+          clearSelection();
+        }
+      } else {
+        clearSelection();
+      }
     }
 
     function onPlayerDisconnected() {
