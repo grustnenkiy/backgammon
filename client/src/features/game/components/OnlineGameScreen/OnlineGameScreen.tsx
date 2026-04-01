@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Board } from '../../../../components/Board';
 import { Dice } from '../../../../components/Dice';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
+import { useCelebration } from '../../hooks/useCelebration';
 import type { PlayerColor } from 'shared';
+import { WinnerCelebration } from '../WinnerCelebration/WinnerCelebration';
 import '../GameScreen/GameScreen.css';
 
 const DISPLAY_NAME: Record<PlayerColor, string> = {
@@ -15,6 +17,8 @@ type OnlineGameScreenProps = {
 };
 
 export function OnlineGameScreen({ roomId }: OnlineGameScreenProps) {
+  const boardWrapRef = useRef<HTMLDivElement | null>(null);
+
   const {
     game,
     myColor,
@@ -43,7 +47,9 @@ export function OnlineGameScreen({ roomId }: OnlineGameScreenProps) {
       return `Your turn (${turnName})`;
     }
     return `${turnName}'s turn — waiting...`;
-  }, [game, myColor, isMyTurn, hasRolled]);
+  }, [game?.status, game?.winner, game?.currentTurn, game?.dice.length, myColor, isMyTurn, hasRolled]);
+
+  const { celebration, dismiss } = useCelebration(game, boardWrapRef);
 
   if (status === 'connecting') {
     return (
@@ -113,7 +119,7 @@ export function OnlineGameScreen({ roomId }: OnlineGameScreenProps) {
         <Dice values={game.dice} usedDice={game.usedDice} />
       </div>
 
-      <div className="game-screen__board-wrap">
+      <div className="game-screen__board-wrap" ref={boardWrapRef}>
         <Board
           game={game}
           selectedPoint={selectedSource}
@@ -123,6 +129,16 @@ export function OnlineGameScreen({ roomId }: OnlineGameScreenProps) {
           onBearOff={handleBearOff}
         />
       </div>
+
+      {celebration && (
+        <WinnerCelebration
+          key={celebration.key}
+          winner={celebration.winner}
+          checkerCount={game.borneOff[celebration.winner]}
+          origin={celebration.origin}
+          onComplete={dismiss}
+        />
+      )}
     </div>
   );
 }

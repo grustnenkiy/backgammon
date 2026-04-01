@@ -252,6 +252,10 @@
   outline-offset: -3px;
 }
 
+.tray__section--winner {
+  box-shadow: inset 0 0 0 2px rgba(255, 215, 105, 0.75);
+}
+
 .tray__count {
   font-size: 0.72rem;
   font-weight: 800;

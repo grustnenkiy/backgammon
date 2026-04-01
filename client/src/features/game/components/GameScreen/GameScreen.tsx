@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Board } from '../../../../components/Board';
 import { Dice } from '../../../../components/Dice';
 import { useLocalGame } from '../../hooks/useLocalGame';
+import { useCelebration } from '../../hooks/useCelebration';
 import type { PlayerColor } from 'shared';
+import { WinnerCelebration } from '../WinnerCelebration/WinnerCelebration';
 import './GameScreen.css';
 
 const DISPLAY_NAME: Record<PlayerColor, string> = {
@@ -12,6 +14,7 @@ const DISPLAY_NAME: Record<PlayerColor, string> = {
 
 export function GameScreen() {
   const [showPointLabels, setShowPointLabels] = useState(false);
+  const boardWrapRef = useRef<HTMLDivElement | null>(null);
 
   const {
     game,
@@ -32,6 +35,8 @@ export function GameScreen() {
     if (!hasRolled) return `${DISPLAY_NAME[game.currentTurn]} — roll the dice`;
     return `Turn: ${DISPLAY_NAME[game.currentTurn]}`;
   }, [game.currentTurn, game.status, game.winner, hasRolled]);
+
+  const { celebration, dismiss } = useCelebration(game, boardWrapRef);
 
   return (
     <div className="game-screen">
@@ -58,7 +63,7 @@ export function GameScreen() {
         </button>
       </div>
 
-      <div className="game-screen__board-wrap">
+      <div className="game-screen__board-wrap" ref={boardWrapRef}>
         <Board
           game={game}
           showPointLabels={showPointLabels}
@@ -69,6 +74,16 @@ export function GameScreen() {
           onBearOff={handleBearOff}
         />
       </div>
+
+      {celebration && (
+        <WinnerCelebration
+          key={celebration.key}
+          winner={celebration.winner}
+          checkerCount={game.borneOff[celebration.winner]}
+          origin={celebration.origin}
+          onComplete={dismiss}
+        />
+      )}
     </div>
   );
 }

@@ -124,7 +124,8 @@ export function Board({
         onClick={onBearOff}
       >
         <div
-          className={`tray__section${canBearOff && game.currentTurn === 'white' ? ' tray__section--active' : ''}`}
+          className={`tray__section${canBearOff && game.currentTurn === 'white' ? ' tray__section--active' : ''}${game.status === 'finished' && game.winner === 'white' ? ' tray__section--winner' : ''}`}
+          data-tray-color="white"
         >
           {game.borneOff.white > 0 && (
             <>
@@ -134,7 +135,8 @@ export function Board({
           )}
         </div>
         <div
-          className={`tray__section${canBearOff && game.currentTurn === 'black' ? ' tray__section--active' : ''}`}
+          className={`tray__section${canBearOff && game.currentTurn === 'black' ? ' tray__section--active' : ''}${game.status === 'finished' && game.winner === 'black' ? ' tray__section--winner' : ''}`}
+          data-tray-color="black"
         >
           {game.borneOff.black > 0 && (
             <>
