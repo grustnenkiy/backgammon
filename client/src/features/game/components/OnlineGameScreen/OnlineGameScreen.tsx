@@ -47,7 +47,15 @@ export function OnlineGameScreen({ roomId }: OnlineGameScreenProps) {
       return `Your turn (${turnName})`;
     }
     return `${turnName}'s turn — waiting...`;
-  }, [game?.status, game?.winner, game?.currentTurn, game?.dice.length, myColor, isMyTurn, hasRolled]);
+  }, [
+    game?.status,
+    game?.winner,
+    game?.currentTurn,
+    game?.dice.length,
+    myColor,
+    isMyTurn,
+    hasRolled,
+  ]);
 
   const { celebration, dismiss } = useCelebration(game, boardWrapRef);
 

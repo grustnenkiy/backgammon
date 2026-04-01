@@ -5,7 +5,10 @@ export type ScreenPoint = {
   y: number;
 };
 
-export function getWinnerTrayCenter(root: HTMLElement | null, winner: PlayerColor): ScreenPoint | null {
+export function getWinnerTrayCenter(
+  root: HTMLElement | null,
+  winner: PlayerColor,
+): ScreenPoint | null {
   if (!root) return null;
 
   const traySection = root.querySelector<HTMLElement>(`[data-tray-color="${CSS.escape(winner)}"]`);

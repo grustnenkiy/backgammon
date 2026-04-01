@@ -37,7 +37,12 @@ function checkerStroke(color: PlayerColor) {
   return color === 'white' ? '#1f1f1f' : '#f2efe9';
 }
 
-export function WinnerCelebration({ winner, checkerCount, origin, onComplete }: WinnerCelebrationProps) {
+export function WinnerCelebration({
+  winner,
+  checkerCount,
+  origin,
+  onComplete,
+}: WinnerCelebrationProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const onCompleteRef = useRef(onComplete);
 
@@ -88,7 +93,9 @@ export function WinnerCelebration({ winner, checkerCount, origin, onComplete }: 
       return {
         x: launchOrigin.x + lateralSpread * 0.04,
         y: launchOrigin.y + randomInRange(-6, 6),
-        vx: Math.cos(angle) * speed + (i % 2 === 0 ? randomInRange(-200, 100) : randomInRange(-100, 200)),
+        vx:
+          Math.cos(angle) * speed +
+          (i % 2 === 0 ? randomInRange(-200, 100) : randomInRange(-100, 200)),
         vy: Math.sin(angle) * speed - randomInRange(80, 180),
         angle: randomInRange(0, Math.PI * 2),
         spin: randomInRange(-5.8, 5.8),

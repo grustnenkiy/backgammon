@@ -37,8 +37,6 @@ export function useOnlineGame(roomId: string) {
   }, []);
 
   useEffect(() => {
-    let disconnectTimer: ReturnType<typeof setTimeout> | undefined;
-
     function onConnect() {
       socket.emit('join_game', roomId);
     }
@@ -82,8 +80,6 @@ export function useOnlineGame(roomId: string) {
     socket.on('player_disconnected', onPlayerDisconnected);
     socket.on('game_error', onGameError);
 
-    // Cancel any pending disconnect from a previous cleanup (StrictMode re-mount)
-    clearTimeout(disconnectTimer);
     socket.connect();
 
     // If socket is already connected (e.g. room creator navigating from home),
@@ -98,10 +94,6 @@ export function useOnlineGame(roomId: string) {
       socket.off('game_state', onGameState);
       socket.off('player_disconnected', onPlayerDisconnected);
       socket.off('game_error', onGameError);
-      // Delay disconnect so React StrictMode's unmount+remount cycle
-      // doesn't kill the connection. If the effect re-runs (same page),
-      // socket.connect() in the new setup will keep it alive.
-      disconnectTimer = setTimeout(() => socket.disconnect(), 100);
     };
   }, [roomId, resolveMyColor, clearSelection]);
 
