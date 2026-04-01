@@ -9,7 +9,7 @@
   display: flex;
   gap: 0;
   padding: 0.26rem;
-  border: 3px solid var(--line);
+  border: var(--board-border-width) solid var(--line);
   background: var(--ink);
   user-select: none;
 }
@@ -17,7 +17,7 @@
 .board__surface {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--line);
+  border: var(--cell-border-width) solid var(--line);
   overflow: hidden;
   background: var(--surface);
 }
@@ -27,7 +27,7 @@
 }
 
 .board__row:first-child {
-  border-bottom: 1px solid var(--line);
+  border-bottom: var(--cell-border-width) solid var(--line);
 }
 
 .board__quadrant {
@@ -36,7 +36,7 @@
 
 .board__bar {
   width: var(--bar-w);
-  background: #d3d0cb;
+  background: var(--bar-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -44,8 +44,8 @@
   gap: 4px;
   flex-shrink: 0;
   border: none;
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
+  border-left: var(--cell-border-width) solid var(--line);
+  border-right: var(--cell-border-width) solid var(--line);
   padding: 0;
   cursor: default;
   font: inherit;
@@ -53,8 +53,8 @@
 }
 
 .board__bar--selected {
-  background: var(--accent-soft);
-  outline: 3px solid var(--accent);
+  background: var(--highlight-fill);
+  outline: 3px solid var(--highlight-border);
   outline-offset: -3px;
 }
 
@@ -82,22 +82,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: background 120ms ease;
+  transition: background var(--transition-duration) var(--transition-timing);
 }
 
 .point + .point {
-  border-left: 1px solid var(--soft-line);
+  border-left: var(--cell-border-width) solid var(--soft-line);
 }
 
 .point:hover {
-  background: #eceae6;
+  background: var(--point-hover);
 }
 
 .point__triangle {
   position: absolute;
   inset: 0px;
   z-index: 0;
-  transition: opacity 120ms ease;
+  transition: opacity var(--transition-duration) var(--transition-timing);
 }
 
 .point--top .point__triangle {
@@ -117,16 +117,16 @@
 }
 
 .point--selected {
-  background: var(--accent-soft);
+  background: var(--highlight-fill);
 }
 
 .point--selected .point__triangle {
-  background: var(--accent) !important;
+  background: var(--highlight-border) !important;
   opacity: 1;
 }
 
 .point--valid-dest {
-  background: var(--accent-soft);
+  background: var(--highlight-fill);
 }
 
 .point--valid-dest .point__triangle {
@@ -139,9 +139,9 @@
   z-index: 3;
   width: 0.98rem;
   height: 0.98rem;
-  border-radius: 999px;
-  border: 2px solid var(--line);
-  background: var(--accent);
+  border-radius: var(--checker-radius);
+  border: 2px solid var(--highlight-border);
+  background: var(--highlight-border);
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
@@ -193,8 +193,8 @@
   font-weight: 800;
   color: #fff;
   padding: 0.08rem 0.32rem;
-  background: var(--ink);
-  border: 1px solid var(--line);
+  background: var(--line);
+  border: var(--cell-border-width) solid var(--line);
 }
 
 .point__label {
@@ -205,8 +205,8 @@
   color: var(--ink);
   line-height: 1;
   padding: 0.08rem 0.22rem;
-  background: rgba(251, 251, 250, 0.92);
-  border: 1px solid #ccc8c1;
+  background: var(--label-bg);
+  border: var(--cell-border-width) solid var(--label-border);
 }
 
 .point--top .point__label {
@@ -219,10 +219,10 @@
 
 .board__tray {
   width: var(--tray-w);
-  background: #d3d0cb;
+  background: var(--bar-bg);
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--line);
+  border: var(--cell-border-width) solid var(--line);
   padding: 0;
   cursor: default;
   font: inherit;
@@ -243,12 +243,12 @@
 }
 
 .tray__section:first-child {
-  border-bottom: 1px solid var(--line);
+  border-bottom: var(--cell-border-width) solid var(--line);
 }
 
 .tray__section--active {
-  background: var(--accent-soft);
-  outline: 3px solid var(--accent);
+  background: var(--highlight-fill);
+  outline: 3px solid var(--highlight-border);
   outline-offset: -3px;
 }
 
@@ -263,7 +263,7 @@
 }
 
 .point--selected .checker {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--highlight-border);
   outline-offset: -3px;
   transform: scale(1.04);
 }

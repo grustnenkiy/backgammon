@@ -17,10 +17,37 @@
   --checker-white: #f7f7f6;
   --checker-black: #18191b;
 
+  --checker-white-border: #1f2022;
+  --checker-black-border: #f3f2f0;
+
+  --bar-bg: #d3d0cb;
+  --point-hover: #eceae6;
+  --label-bg: rgba(251, 251, 250, 0.92);
+  --label-border: #ccc8c1;
+  --notice-bg: #fffbe6;
+  --notice-text: #7a5a00;
+
+  --highlight-fill: #ffd9d2;
+  --highlight-border: #ef3216;
+
+  --font-family: 'Archivo', 'Segoe UI', sans-serif;
+  --font-weight: 600;
+  --button-letter-spacing: 0.1em;
+
+  --checker-radius: 999px;
+  --pip-radius: 999px;
+  --button-radius: 0px;
+
+  --board-border-width: 3px;
+  --cell-border-width: 1px;
+
+  --transition-duration: 120ms;
+  --transition-timing: ease;
+
   color: var(--ink);
-  font-family: 'Archivo', 'Segoe UI', sans-serif;
+  font-family: var(--font-family);
   line-height: 1.45;
-  font-weight: 600;
+  font-weight: var(--font-weight);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

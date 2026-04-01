@@ -1,17 +1,17 @@
 .checker {
   width: var(--checker-size);
   height: var(--checker-size);
-  border-radius: 999px;
+  border-radius: var(--checker-radius);
   flex-shrink: 0;
-  transition: outline-color 120ms ease;
+  transition: outline-color var(--transition-duration) var(--transition-timing);
 }
 
 .checker--player-white {
   background: var(--checker-white);
-  border: 2px solid var(--line);
+  border: 2px solid var(--checker-white-border);
 }
 
 .checker--player-black {
   background: var(--checker-black);
-  border: 2px solid var(--surface);
+  border: 2px solid var(--checker-black-border);
 }

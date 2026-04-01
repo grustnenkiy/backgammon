@@ -29,12 +29,20 @@ function randomInRange(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
+function getVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 function checkerFill(color: PlayerColor) {
-  return color === 'white' ? '#f7f7f6' : '#18191b';
+  return color === 'white'
+    ? (getVar('--checker-white') || '#f7f7f6')
+    : (getVar('--checker-black') || '#18191b');
 }
 
 function checkerStroke(color: PlayerColor) {
-  return color === 'white' ? '#1f1f1f' : '#f2efe9';
+  return color === 'white'
+    ? (getVar('--checker-white-border') || '#1f1f1f')
+    : (getVar('--checker-black-border') || '#f2efe9');
 }
 
 export function WinnerCelebration({

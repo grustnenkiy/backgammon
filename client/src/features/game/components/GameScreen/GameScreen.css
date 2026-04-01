@@ -34,14 +34,15 @@
   align-items: center;
   justify-content: center;
   border: 2px solid var(--line);
+  border-radius: var(--button-radius);
   cursor: pointer;
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
   transition:
-    filter 120ms ease,
-    background 120ms ease;
+    filter var(--transition-duration) var(--transition-timing),
+    background var(--transition-duration) var(--transition-timing);
 }
 
 .game-screen__roll {
@@ -63,8 +64,8 @@
   margin: 0;
   padding: 0.45rem 1rem;
   border: 2px solid var(--line);
-  background: #fffbe6;
-  color: #7a5a00;
+  background: var(--notice-bg);
+  color: var(--notice-text);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
