@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Move, PlayerColor, RoomState } from 'shared';
 import { getValidMoves, hasAnyValidMoves } from 'shared';
 import { socket } from '../api/socket';
+import { getPlayerSession, savePlayerSession } from '../api/playerSession';
 
 type OnlineStatus = 'connecting' | 'waiting' | 'playing' | 'finished' | 'disconnected' | 'error';
 
@@ -38,7 +39,11 @@ export function useOnlineGame(roomId: string) {
 
   useEffect(() => {
     function onConnect() {
-      socket.emit('join_game', roomId);
+      const session = getPlayerSession(roomId);
+      socket.emit('join_game', {
+        roomId,
+        authToken: session?.authToken,
+      });
     }
 
     function onGameCreated(r: RoomState) {
@@ -49,6 +54,7 @@ export function useOnlineGame(roomId: string) {
 
     function onGameState(r: RoomState) {
       setRoom(r);
+      setError(null);
       const color = resolveMyColor(r);
       if (color) setMyColor(color);
 
@@ -85,6 +91,17 @@ export function useOnlineGame(roomId: string) {
       setStatus('disconnected');
     }
 
+    function onPlayerSession(data: {
+      roomId: string;
+      color: PlayerColor;
+      authToken: string;
+    }) {
+      savePlayerSession(data);
+      if (data.roomId === roomId) {
+        setMyColor(data.color);
+      }
+    }
+
     function onGameError(data: { message: string }) {
       setError(data.message);
       setStatus('error');
@@ -94,6 +111,7 @@ export function useOnlineGame(roomId: string) {
     socket.on('game_created', onGameCreated);
     socket.on('game_state', onGameState);
     socket.on('player_disconnected', onPlayerDisconnected);
+    socket.on('player_session', onPlayerSession);
     socket.on('game_error', onGameError);
 
     socket.connect();
@@ -109,6 +127,7 @@ export function useOnlineGame(roomId: string) {
       socket.off('game_created', onGameCreated);
       socket.off('game_state', onGameState);
       socket.off('player_disconnected', onPlayerDisconnected);
+      socket.off('player_session', onPlayerSession);
       socket.off('game_error', onGameError);
     };
   }, [roomId, resolveMyColor, clearSelection]);

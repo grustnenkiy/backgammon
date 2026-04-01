@@ -2,28 +2,79 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { socket } from '../../features/game/api/socket';
 import type { RoomState } from 'shared';
+import { savePlayerSession } from '../../features/game/api/playerSession';
 import './HomePage.css';
 
 export function HomePage() {
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   function handleCreateOnline() {
     if (isCreating) return;
     setIsCreating(true);
+    setCreateError(null);
+
+    let settled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      setIsCreating(false);
+      setCreateError('Connection timed out. Please try again.');
+      cleanup();
+    }, 10000);
+
+    function cleanup() {
+      socket.off('game_created', onGameCreated);
+      socket.off('player_session', onPlayerSession);
+      socket.off('game_error', onGameError);
+      socket.off('connect_error', onConnectError);
+      socket.off('connect', onConnect);
+      window.clearTimeout(timeoutId);
+    }
+
+    function onPlayerSession(data: { roomId: string; color: 'white' | 'black'; authToken: string }) {
+      savePlayerSession(data);
+    }
+
+    function onGameCreated(room: RoomState) {
+      if (settled) return;
+      settled = true;
+      setIsCreating(false);
+      cleanup();
+      navigate(`/game/${room.roomId}`);
+    }
+
+    function onGameError() {
+      if (settled) return;
+      settled = true;
+      setIsCreating(false);
+      setCreateError('Failed to create game. Please try again.');
+      cleanup();
+    }
+
+    function onConnectError() {
+      if (settled) return;
+      settled = true;
+      setIsCreating(false);
+      setCreateError('Could not connect to server. Please try again.');
+      cleanup();
+    }
+
+    function onConnect() {
+      socket.emit('create_game');
+    }
+
+    socket.on('game_created', onGameCreated);
+    socket.on('player_session', onPlayerSession);
+    socket.on('game_error', onGameError);
+    socket.on('connect_error', onConnectError);
+    socket.once('connect', onConnect);
 
     socket.connect();
 
-    socket.once('game_created', (room: RoomState) => {
-      navigate(`/game/${room.roomId}`);
-    });
-
     if (socket.connected) {
-      socket.emit('create_game');
-    } else {
-      socket.once('connect', () => {
-        socket.emit('create_game');
-      });
+      onConnect();
     }
   }
 
@@ -45,6 +96,7 @@ export function HomePage() {
           {isCreating ? 'Creating...' : 'Play Online'}
         </button>
       </div>
+      {createError && <p className="home__error">{createError}</p>}
     </div>
   );
 }

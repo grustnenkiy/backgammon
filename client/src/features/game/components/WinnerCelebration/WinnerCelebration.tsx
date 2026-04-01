@@ -45,6 +45,40 @@ function checkerStroke(color: PlayerColor) {
     : (getVar('--checker-black-border') || '#f2efe9');
 }
 
+function checkerCornerRadius(fallbackSize: number) {
+  const raw = getVar('--checker-radius');
+  if (!raw) return fallbackSize * 0.5;
+  const parsed = Number.parseFloat(raw);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallbackSize * 0.5;
+  return parsed;
+}
+
+function drawCheckerPath(ctx: CanvasRenderingContext2D, size: number, cornerRadius: number) {
+  const half = size * 0.5;
+  const r = Math.max(0, Math.min(cornerRadius, half));
+
+  if (r === 0) {
+    ctx.rect(-half, -half, size, size);
+    return;
+  }
+
+  if (r >= half) {
+    ctx.arc(0, 0, half, 0, Math.PI * 2);
+    return;
+  }
+
+  ctx.moveTo(-half + r, -half);
+  ctx.lineTo(half - r, -half);
+  ctx.arcTo(half, -half, half, -half + r, r);
+  ctx.lineTo(half, half - r);
+  ctx.arcTo(half, half, half - r, half, r);
+  ctx.lineTo(-half + r, half);
+  ctx.arcTo(-half, half, -half, half - r, r);
+  ctx.lineTo(-half, -half + r);
+  ctx.arcTo(-half, -half, -half + r, -half, r);
+  ctx.closePath();
+}
+
 export function WinnerCelebration({
   winner,
   checkerCount,
@@ -112,6 +146,9 @@ export function WinnerCelebration({
       };
     });
 
+    const checkerSize = baseRadius * 2;
+    const cornerRadius = checkerCornerRadius(checkerSize);
+
     let rafId = 0;
     let previous = performance.now();
     const start = previous;
@@ -159,7 +196,7 @@ export function WinnerCelebration({
         ctx.globalAlpha = alpha * 0.24;
         ctx.fillStyle = '#101113';
         ctx.beginPath();
-        ctx.arc(0, 0, piece.radius, 0, Math.PI * 2);
+        drawCheckerPath(ctx, piece.radius * 2, cornerRadius);
         ctx.fill();
         ctx.restore();
 
@@ -172,7 +209,7 @@ export function WinnerCelebration({
         ctx.shadowBlur = 9;
         ctx.shadowColor = winner === 'white' ? 'rgba(244, 244, 244, 0.72)' : 'rgba(8, 8, 8, 0.75)';
         ctx.beginPath();
-        ctx.arc(0, 0, piece.radius, 0, Math.PI * 2);
+        drawCheckerPath(ctx, piece.radius * 2, cornerRadius);
         ctx.fill();
         ctx.stroke();
         ctx.restore();

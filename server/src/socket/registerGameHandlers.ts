@@ -1,14 +1,14 @@
+import { randomUUID } from 'node:crypto';
 import type { Server, Socket } from 'socket.io';
 import type { GameState, Move, PlayerColor, RoomState } from 'shared';
 import { applyMove, getValidMoves, hasAnyValidMoves } from 'shared';
 import {
   createRoom,
   getRoom,
-  joinRoom,
   removePlayer,
-  deleteEmptyRooms,
+  deleteRoom,
   isRoomEmpty,
-  findRoomByPlayer,
+  findRoomsByPlayer,
 } from '../rooms/roomStore.js';
 
 function rollDice(): number[] {
@@ -37,34 +37,143 @@ function getPlayerColor(room: RoomState, socketId: string): PlayerColor | null {
 }
 
 const disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const roomAuthTokens = new Map<string, { white: string; black?: string }>();
 
 export const DISCONNECT_GRACE_MS = 5000;
+
+type JoinGamePayload = string | { roomId: string; authToken?: string };
+
+function createAuthToken(): string {
+  return randomUUID();
+}
+
+function cancelDisconnectTimer(roomId: string): void {
+  const existing = disconnectTimers.get(roomId);
+  if (existing) {
+    clearTimeout(existing);
+    disconnectTimers.delete(roomId);
+  }
+}
+
+function parseJoinPayload(payload: JoinGamePayload): { roomId: string; authToken?: string } | null {
+  if (typeof payload === 'string') {
+    return { roomId: payload };
+  }
+
+  if (!payload || typeof payload !== 'object' || typeof payload.roomId !== 'string') {
+    return null;
+  }
+
+  if (payload.authToken !== undefined && typeof payload.authToken !== 'string') {
+    return null;
+  }
+
+  if (payload.authToken === undefined) {
+    return { roomId: payload.roomId };
+  }
+
+  return { roomId: payload.roomId, authToken: payload.authToken };
+}
 
 export function registerGameHandlers(io: Server, socket: Socket) {
   socket.on('create_game', () => {
     const room = createRoom(socket.id);
+    const whiteAuthToken = createAuthToken();
+    roomAuthTokens.set(room.roomId, { white: whiteAuthToken });
+
     socket.join(room.roomId);
+    socket.emit('player_session', {
+      roomId: room.roomId,
+      color: 'white' as PlayerColor,
+      authToken: whiteAuthToken,
+    });
     socket.emit('game_created', room);
   });
 
-  socket.on('join_game', (roomId: string) => {
-    // Cancel any pending disconnect timer for this room
-    const timerKey = `${roomId}`;
-    const existing = disconnectTimers.get(timerKey);
-    if (existing) {
-      clearTimeout(existing);
-      disconnectTimers.delete(timerKey);
+  socket.on('join_game', (payload: JoinGamePayload) => {
+    const parsed = parseJoinPayload(payload);
+    if (!parsed) {
+      socket.emit('game_error', { message: 'Invalid join payload' });
+      return;
     }
 
-    const room = joinRoom(roomId, socket.id);
+    const { roomId, authToken } = parsed;
+    const room = getRoom(roomId);
 
     if (!room) {
       socket.emit('game_error', { message: 'Room not found' });
       return;
     }
 
+    const auth = roomAuthTokens.get(roomId);
+    if (!auth) {
+      socket.emit('game_error', { message: 'Room not found' });
+      return;
+    }
+
+    const existingColor = getPlayerColor(room, socket.id);
+    if (existingColor) {
+      cancelDisconnectTimer(roomId);
+      socket.join(room.roomId);
+      io.to(room.roomId).emit('game_state', room);
+
+      const existingToken = existingColor === 'white' ? auth.white : auth.black;
+      if (existingToken) {
+        socket.emit('player_session', {
+          roomId,
+          color: existingColor,
+          authToken: existingToken,
+        });
+      }
+      return;
+    }
+
+    let joinedColor: PlayerColor | null = null;
+
+    if (!room.players.white) {
+      if (room.game.status === 'playing' && !(authToken && authToken === auth.white)) {
+        socket.emit('game_error', {
+          message: 'White seat is reserved for reconnecting player',
+        });
+        return;
+      }
+      room.players.white = socket.id;
+      joinedColor = 'white';
+      if (room.game.status !== 'playing') {
+        auth.white = createAuthToken();
+      }
+    } else if (!room.players.black) {
+      if (room.game.status === 'playing' && auth.black) {
+        if (!(authToken && authToken === auth.black)) {
+          socket.emit('game_error', {
+            message: 'Black seat is reserved for reconnecting player',
+          });
+          return;
+        }
+        room.players.black = socket.id;
+        joinedColor = 'black';
+      } else {
+        room.players.black = socket.id;
+        joinedColor = 'black';
+        auth.black = createAuthToken();
+      }
+    } else {
+      socket.emit('game_error', { message: 'Room is full' });
+      return;
+    }
+
+    if (room.players.white && room.players.black && room.game.status === 'waiting') {
+      room.game.status = 'playing';
+    }
+
+    cancelDisconnectTimer(roomId);
     socket.join(room.roomId);
     io.to(room.roomId).emit('game_state', room);
+    socket.emit('player_session', {
+      roomId,
+      color: joinedColor,
+      authToken: joinedColor === 'white' ? auth.white : auth.black!,
+    });
   });
 
   socket.on('get_game_state', (roomId: string) => {
@@ -154,31 +263,37 @@ export function registerGameHandlers(io: Server, socket: Socket) {
       if (allDiceUsed(room.game) || !hasAnyValidMoves(room.game)) {
         room.game = switchTurn(room.game);
       }
+    } else {
+      roomAuthTokens.delete(roomId);
     }
 
     io.to(roomId).emit('game_state', room);
   });
 
   socket.on('disconnect', () => {
-    const room = findRoomByPlayer(socket.id);
-    if (!room) return;
-
-    const roomId = room.roomId;
+    const rooms = findRoomsByPlayer(socket.id);
+    if (rooms.length === 0) return;
 
     // Remove the player from the slot immediately so a reconnecting
     // socket (new ID after page reload) can reclaim the slot.
     removePlayer(socket.id);
 
-    // Delay room cleanup and opponent notification to allow for page reloads.
-    const timer = setTimeout(() => {
-      disconnectTimers.delete(roomId);
-      if (isRoomEmpty(roomId)) {
-        deleteEmptyRooms();
-      } else {
-        // Slot was not reclaimed — notify the remaining player
-        io.to(roomId).emit('player_disconnected');
-      }
-    }, DISCONNECT_GRACE_MS);
-    disconnectTimers.set(roomId, timer);
+    for (const room of rooms) {
+      const roomId = room.roomId;
+
+      // Delay room cleanup and opponent notification to allow for page reloads.
+      cancelDisconnectTimer(roomId);
+      const timer = setTimeout(() => {
+        disconnectTimers.delete(roomId);
+        if (isRoomEmpty(roomId)) {
+          deleteRoom(roomId);
+          roomAuthTokens.delete(roomId);
+        } else {
+          // Slot was not reclaimed — notify the remaining player
+          io.to(roomId).emit('player_disconnected');
+        }
+      }, DISCONNECT_GRACE_MS);
+      disconnectTimers.set(roomId, timer);
+    }
   });
 }

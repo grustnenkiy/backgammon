@@ -2,10 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   createRoom,
   getRoom,
-  joinRoom,
   removePlayer,
-  deleteEmptyRooms,
-  findRoomByPlayer,
+  deleteRoom,
+  isRoomEmpty,
+  findRoomsByPlayer,
   clearRooms,
 } from '../rooms/roomStore.js';
 
@@ -56,55 +56,10 @@ describe('getRoom', () => {
   });
 });
 
-describe('joinRoom', () => {
-  it('assigns the joiner as black', () => {
-    const room = createRoom('host');
-    const joined = joinRoom(room.roomId, 'guest');
-
-    expect(joined).not.toBeNull();
-    expect(joined!.players.black).toBe('guest');
-  });
-
-  it('sets game status to playing', () => {
-    const room = createRoom('host');
-    const joined = joinRoom(room.roomId, 'guest');
-
-    expect(joined!.game.status).toBe('playing');
-  });
-
-  it('returns null for non-existent room', () => {
-    expect(joinRoom('nonexistent', 'guest')).toBeNull();
-  });
-
-  it('does not overwrite black if already assigned', () => {
-    const room = createRoom('host');
-    joinRoom(room.roomId, 'guest-1');
-    const result = joinRoom(room.roomId, 'guest-2');
-
-    expect(result).toBeNull();
-    expect(room.players.black).toBe('guest-1');
-  });
-
-  it('allows the host to rejoin their own room', () => {
-    const room = createRoom('host');
-    const result = joinRoom(room.roomId, 'host');
-
-    expect(result).toBe(room);
-    expect(result!.game.status).toBe('waiting');
-  });
-
-  it('returns the same room reference', () => {
-    const room = createRoom('host');
-    const joined = joinRoom(room.roomId, 'guest');
-
-    expect(joined).toBe(room);
-  });
-});
-
 describe('removePlayer', () => {
   it('removes white player from room', () => {
     const room = createRoom('host');
-    joinRoom(room.roomId, 'guest');
+    room.players.black = 'guest';
 
     removePlayer('host');
 
@@ -114,7 +69,7 @@ describe('removePlayer', () => {
 
   it('removes black player from room', () => {
     const room = createRoom('host');
-    joinRoom(room.roomId, 'guest');
+    room.players.black = 'guest';
 
     removePlayer('guest');
 
@@ -124,7 +79,7 @@ describe('removePlayer', () => {
 
   it('does not delete room when both players are gone', () => {
     const room = createRoom('host');
-    joinRoom(room.roomId, 'guest');
+    room.players.black = 'guest';
 
     removePlayer('host');
     removePlayer('guest');
@@ -148,40 +103,61 @@ describe('removePlayer', () => {
   });
 });
 
-describe('deleteEmptyRooms', () => {
-  it('deletes rooms with no players', () => {
+describe('deleteRoom', () => {
+  it('deletes the specified room', () => {
     const room = createRoom('host');
-    removePlayer('host');
-    deleteEmptyRooms();
+    deleteRoom(room.roomId);
 
     expect(getRoom(room.roomId)).toBeUndefined();
   });
 
-  it('keeps rooms that still have players', () => {
-    const room = createRoom('host');
-    joinRoom(room.roomId, 'guest');
-    removePlayer('guest');
-    deleteEmptyRooms();
-
-    expect(getRoom(room.roomId)).toBeDefined();
+  it('is a no-op for non-existent room', () => {
+    deleteRoom('nonexistent');
+    // no error thrown
   });
 });
 
-describe('findRoomByPlayer', () => {
+describe('isRoomEmpty', () => {
+  it('returns true when room has no players', () => {
+    const room = createRoom('host');
+    removePlayer('host');
+
+    expect(isRoomEmpty(room.roomId)).toBe(true);
+  });
+
+  it('returns false when room has a player', () => {
+    const room = createRoom('host');
+
+    expect(isRoomEmpty(room.roomId)).toBe(false);
+  });
+
+  it('returns true for non-existent room', () => {
+    expect(isRoomEmpty('nonexistent')).toBe(true);
+  });
+});
+
+describe('findRoomsByPlayer', () => {
   it('finds room where player is white', () => {
     const room = createRoom('host');
-    expect(findRoomByPlayer('host')).toBe(room);
+    expect(findRoomsByPlayer('host')).toEqual([room]);
   });
 
   it('finds room where player is black', () => {
     const room = createRoom('host');
-    joinRoom(room.roomId, 'guest');
+    room.players.black = 'guest';
 
-    expect(findRoomByPlayer('guest')).toBe(room);
+    expect(findRoomsByPlayer('guest')).toEqual([room]);
   });
 
-  it('returns undefined for unknown socket', () => {
+  it('returns empty array for unknown socket', () => {
     createRoom('host');
-    expect(findRoomByPlayer('unknown')).toBeUndefined();
+    expect(findRoomsByPlayer('unknown')).toEqual([]);
+  });
+
+  it('finds multiple rooms for the same player', () => {
+    const room1 = createRoom('host');
+    const room2 = createRoom('host');
+
+    expect(findRoomsByPlayer('host')).toEqual([room1, room2]);
   });
 });

@@ -6,6 +6,12 @@ import { registerGameHandlers, DISCONNECT_GRACE_MS } from '../socket/registerGam
 import { clearRooms } from '../rooms/roomStore.js';
 import type { RoomState, Move } from 'shared';
 
+type PlayerSession = {
+  roomId: string;
+  color: 'white' | 'black';
+  authToken: string;
+};
+
 let httpServer: ReturnType<typeof createServer>;
 let io: Server;
 let port: number;
@@ -112,6 +118,96 @@ describe('join_game', () => {
       expect(err.message).toBe('Room not found');
     } finally {
       client.disconnect();
+    }
+  });
+
+  it('returns error when room is full', async () => {
+    const host = await connectClient();
+    const guest = await connectClient();
+    const intruder = await connectClient();
+    try {
+      const createPromise = waitFor<RoomState>(host, 'game_created');
+      host.emit('create_game');
+      const created = await createPromise;
+
+      const joinPromise = waitFor<RoomState>(host, 'game_state');
+      guest.emit('join_game', created.roomId);
+      await joinPromise;
+
+      const errPromise = waitFor<{ message: string }>(intruder, 'game_error');
+      intruder.emit('join_game', created.roomId);
+      const err = await errPromise;
+
+      expect(err.message).toBe('Room is full');
+    } finally {
+      host.disconnect();
+      guest.disconnect();
+      intruder.disconnect();
+    }
+  });
+
+  it('reserves a disconnected seat and allows reclaim only with matching auth token', async () => {
+    const host = await connectClient();
+    const guest = await connectClient();
+    const intruder = await connectClient();
+    const rejoiningHost = await connectClient();
+    try {
+      const hostSessionPromise = waitFor<PlayerSession>(host, 'player_session');
+      const createPromise = waitFor<RoomState>(host, 'game_created');
+      host.emit('create_game');
+      const created = await createPromise;
+      const hostSession = await hostSessionPromise;
+
+      const joinPromise = waitFor<RoomState>(host, 'game_state');
+      guest.emit('join_game', created.roomId);
+      await joinPromise;
+
+      host.disconnect();
+
+      const intruderErrPromise = waitFor<{ message: string }>(intruder, 'game_error');
+      intruder.emit('join_game', created.roomId);
+      const intruderErr = await intruderErrPromise;
+      expect(intruderErr.message).toBe('White seat is reserved for reconnecting player');
+
+      const reclaimPromise = waitFor<RoomState>(rejoiningHost, 'game_state');
+      rejoiningHost.emit('join_game', {
+        roomId: created.roomId,
+        authToken: hostSession.authToken,
+      });
+      const reclaimed = await reclaimPromise;
+      expect(reclaimed.players.white).toBe(rejoiningHost.id);
+    } finally {
+      guest.disconnect();
+      intruder.disconnect();
+      rejoiningHost.disconnect();
+    }
+  });
+
+  it('rejects reconnection with a wrong auth token', async () => {
+    const host = await connectClient();
+    const guest = await connectClient();
+    const impersonator = await connectClient();
+    try {
+      const createPromise = waitFor<RoomState>(host, 'game_created');
+      host.emit('create_game');
+      const created = await createPromise;
+
+      const joinPromise = waitFor<RoomState>(host, 'game_state');
+      guest.emit('join_game', created.roomId);
+      await joinPromise;
+
+      host.disconnect();
+
+      const errPromise = waitFor<{ message: string }>(impersonator, 'game_error');
+      impersonator.emit('join_game', {
+        roomId: created.roomId,
+        authToken: 'wrong-token',
+      });
+      const err = await errPromise;
+      expect(err.message).toBe('White seat is reserved for reconnecting player');
+    } finally {
+      guest.disconnect();
+      impersonator.disconnect();
     }
   });
 });
