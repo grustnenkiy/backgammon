@@ -49,5 +49,7 @@ export type Theme = {
     transitionDuration: string;
     transitionTimingFunction: string;
     animationStyle: AnimationStyle;
+    shadow: string;
+    glow: string;
   };
 };

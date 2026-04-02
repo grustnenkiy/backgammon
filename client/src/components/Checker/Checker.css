@@ -1,9 +1,15 @@
 .checker {
+  position: relative;
   width: var(--checker-size);
   height: var(--checker-size);
   border-radius: var(--checker-radius);
   flex-shrink: 0;
-  transition: outline-color var(--transition-duration) var(--transition-timing);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition:
+    outline-color var(--transition-duration) var(--transition-timing),
+    transform var(--transition-duration) var(--transition-timing),
+    box-shadow var(--transition-duration) var(--transition-timing);
 }
 
 .checker--player-white {
@@ -14,4 +20,29 @@
 .checker--player-black {
   background: var(--checker-black);
   border: 2px solid var(--checker-black-border);
+}
+
+[data-theme='fairytale'] .checker {
+  box-shadow:
+    var(--shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+[data-theme='fairytale'] .checker::after {
+  content: '';
+  position: absolute;
+  inset: 8% 14% 40% 14%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+[data-theme='fairytale'] .checker--player-white {
+  border-width: 1px;
+  background: radial-gradient(circle at 30% 25%, #ffffff 0%, #fff5fc 58%, #f7e8f8 100%);
+}
+
+[data-theme='fairytale'] .checker--player-black {
+  border-width: 1px;
+  background: radial-gradient(circle at 30% 25%, #b59ad0 0%, #8c6bb1 58%, #705190 100%);
 }

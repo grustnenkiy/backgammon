@@ -9,15 +9,17 @@
   border: 2px solid var(--line);
   border-radius: var(--button-radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
   color: var(--ink);
   font-size: 0.66rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
   cursor: pointer;
   transition:
     background var(--transition-duration) var(--transition-timing),
-    color var(--transition-duration) var(--transition-timing);
+    color var(--transition-duration) var(--transition-timing),
+    box-shadow var(--transition-duration) var(--transition-timing);
 }
 
 .theme-switcher__btn:hover {
@@ -27,4 +29,5 @@
 .theme-switcher__btn--active {
   background: var(--accent);
   color: #fff;
+  box-shadow: var(--glow);
 }

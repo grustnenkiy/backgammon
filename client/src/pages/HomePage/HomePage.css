@@ -11,7 +11,9 @@
   margin: 0;
   padding: 0.42rem 0.85rem;
   border: 3px solid var(--line);
+  border-radius: var(--button-radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
   font-size: clamp(2.15rem, 8.4vw, 5.1rem);
   line-height: 0.92;
   letter-spacing: 0.07em;
@@ -24,7 +26,9 @@
   max-width: 56ch;
   padding: 0.42rem 0.72rem;
   border: 2px solid var(--line);
+  border-radius: var(--button-radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
   color: var(--muted);
   font-size: clamp(0.66rem, 1.4vw, 0.86rem);
   font-weight: 700;
@@ -51,7 +55,10 @@
   text-transform: uppercase;
   color: #fff;
   background: var(--accent);
-  transition: filter var(--transition-duration) var(--transition-timing);
+  box-shadow: var(--shadow);
+  transition:
+    filter var(--transition-duration) var(--transition-timing),
+    box-shadow var(--transition-duration) var(--transition-timing);
 }
 
 .home__cta:hover {
@@ -67,6 +74,11 @@
 .home__cta--online:hover {
   background: var(--accent);
   color: #fff;
+}
+
+.home__cta--online:focus-visible,
+.home__cta:focus-visible {
+  box-shadow: var(--glow);
 }
 
 .home__cta:disabled {

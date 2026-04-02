@@ -49,5 +49,7 @@ export const pixelTheme: Theme = {
     transitionDuration: '0ms',
     transitionTimingFunction: 'steps(1)',
     animationStyle: 'step',
+    shadow: 'none',
+    glow: 'none',
   },
 };

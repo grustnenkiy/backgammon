@@ -49,5 +49,7 @@ export const classicTheme: Theme = {
     transitionDuration: '120ms',
     transitionTimingFunction: 'ease',
     animationStyle: 'smooth',
+    shadow: 'none',
+    glow: 'none',
   },
 };

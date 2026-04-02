@@ -37,6 +37,8 @@ const CSS_VAR_MAP: Record<string, (theme: Theme) => string> = {
 
   '--transition-duration': (t) => t.effects.transitionDuration,
   '--transition-timing': (t) => t.effects.transitionTimingFunction,
+  '--shadow': (t) => t.effects.shadow,
+  '--glow': (t) => t.effects.glow,
 };
 
 export function applyTheme(theme: Theme): void {

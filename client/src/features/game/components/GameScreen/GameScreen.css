@@ -9,7 +9,9 @@
   margin: 0;
   padding: 0.48rem 0.88rem;
   border: 2px solid var(--line);
+  border-radius: var(--button-radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
   font-size: clamp(0.72rem, 1.8vw, 0.96rem);
   font-weight: 800;
   color: var(--ink);
@@ -23,7 +25,9 @@
   gap: 0.95rem;
   padding: 0.58rem 0.78rem;
   border: 2px solid var(--line);
+  border-radius: var(--button-radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .game-screen__roll,
@@ -42,7 +46,9 @@
   text-transform: uppercase;
   transition:
     filter var(--transition-duration) var(--transition-timing),
-    background var(--transition-duration) var(--transition-timing);
+    background var(--transition-duration) var(--transition-timing),
+    box-shadow var(--transition-duration) var(--transition-timing);
+  box-shadow: var(--shadow);
 }
 
 .game-screen__roll {
@@ -64,8 +70,10 @@
   margin: 0;
   padding: 0.45rem 1rem;
   border: 2px solid var(--line);
+  border-radius: var(--button-radius);
   background: var(--notice-bg);
   color: var(--notice-text);
+  box-shadow: var(--shadow);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -80,6 +88,7 @@
 
 .game-screen__toggle--active {
   background: var(--accent-soft);
+  box-shadow: var(--glow);
 }
 
 .game-screen__board-wrap {
@@ -113,7 +122,9 @@
   gap: 0.5rem;
   padding: 0.45rem;
   border: 2px solid var(--line);
+  border-radius: var(--button-radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .game-screen__link-input {
@@ -122,6 +133,7 @@
   min-height: 44px;
   padding: 0.62rem 0.7rem;
   border: 2px solid var(--line);
+  border-radius: var(--button-radius);
   background: transparent;
   font-family: inherit;
   font-size: 0.7rem;
